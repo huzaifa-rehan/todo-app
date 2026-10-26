@@ -1,6 +1,7 @@
 import { eq, getDb, members, workspaces } from "@ability/db";
 import { Hono } from "hono";
 import { getAuth } from "./auth";
+import { boardRoutes } from "./board";
 import { itemRoutes } from "./items";
 import { requireUser } from "./middleware";
 
@@ -16,7 +17,8 @@ const v1 = new Hono()
       .where(eq(members.userId, user.id));
     return c.json({ user: { id: user.id, name: user.name, email: user.email }, workspaces: userWorkspaces });
   })
-  .route("/", itemRoutes);
+  .route("/", itemRoutes)
+  .route("/", boardRoutes);
 
 export const app = new Hono()
   .basePath("/api")

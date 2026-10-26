@@ -46,6 +46,6 @@ pnpm db:migrate          # apply migrations
 1. ✅ Monorepo scaffold and CI
 2. ✅ Auth and an automatic personal workspace
 3. ✅ Items CRUD API and list view
-4. Nested boards (React Flow): create, move, connect, open, breadcrumbs
+4. ✅ Nested boards (React Flow): create, move, connect, open, breadcrumbs
 5. Browser extension: popup quick-add, context menu, shortcut
 6. Production deploy on Vercel

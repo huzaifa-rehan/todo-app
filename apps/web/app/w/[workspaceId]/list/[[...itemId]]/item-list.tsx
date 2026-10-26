@@ -4,7 +4,9 @@ import { itemTypes } from "@ability/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
-import { api, type Item, unwrap } from "@/lib/api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { ViewSwitch } from "@/components/view-switch";
+import { api, invalidateWorkspace, type Item, unwrap } from "@/lib/api";
 
 type ItemType = (typeof itemTypes)[number];
 
@@ -37,7 +39,7 @@ export function ItemList({ workspaceId, itemId }: { workspaceId: string; itemId?
         return { previous };
       },
       onError: (_e, _v, ctx) => ctx?.previous && queryClient.setQueryData(listKey, ctx.previous),
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["items", workspaceId] }),
+      onSettled: () => invalidateWorkspace(queryClient, workspaceId),
     });
   }
 
@@ -49,7 +51,7 @@ export function ItemList({ workspaceId, itemId }: { workspaceId: string; itemId?
           json: { ...v, parentId: itemId ?? null },
         }),
       ),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["items", workspaceId] }),
+    onSettled: () => invalidateWorkspace(queryClient, workspaceId),
   });
 
   const update = useListMutation(
@@ -75,22 +77,10 @@ export function ItemList({ workspaceId, itemId }: { workspaceId: string; itemId?
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-6">
-      <nav className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
-        <Link href={base} className="hover:text-neutral-900">
-          All items
-        </Link>
-        {parent.data?.breadcrumbs.map((crumb) => (
-          <span key={crumb.id} className="flex items-center gap-1">
-            <span>/</span>
-            <Link
-              href={`${base}/${crumb.id}`}
-              className={crumb.id === itemId ? "font-medium text-neutral-900" : "hover:text-neutral-900"}
-            >
-              {crumb.title}
-            </Link>
-          </span>
-        ))}
-      </nav>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Breadcrumbs base={base} crumbs={parent.data?.breadcrumbs ?? []} currentId={itemId} />
+        <ViewSwitch workspaceId={workspaceId} itemId={itemId} current="list" />
+      </div>
 
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold">{itemId ? (parent.data?.item.title ?? "…") : "All items"}</h1>
