@@ -5,3 +5,17 @@
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Local-only Claude kit
+SD MASTER/
+
+# Dependencies and builds
+node_modules/
+.turbo/
+.next/
+.output/
+dist/
+
+# Env
+.env
+.env*.local

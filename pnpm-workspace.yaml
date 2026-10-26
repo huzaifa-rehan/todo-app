@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+
+# eslint-config-next resolves its plugins from the root
+publicHoistPattern:
+  - "*eslint*"
