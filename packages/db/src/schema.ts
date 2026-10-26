@@ -11,6 +11,9 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { user } from "./auth-schema";
+
+export * from "./auth-schema";
 
 export const itemType = pgEnum("item_type", itemTypes);
 export const itemStatus = pgEnum("item_status", itemStatuses);
@@ -23,7 +26,6 @@ const timestamps = {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 };
 
-// Better Auth owns the user/session tables; members reference users by id.
 export const workspaces = pgTable("workspaces", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
@@ -35,7 +37,7 @@ export const members = pgTable(
   "members",
   {
     workspaceId: uuid("workspace_id").notNull().references(() => workspaces.id, { onDelete: "cascade" }),
-    userId: text("user_id").notNull(),
+    userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     role: memberRole("role").notNull().default("member"),
     ...timestamps,
   },
