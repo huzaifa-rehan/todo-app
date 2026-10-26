@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createItemSchema } from "./index";
+import { createItemSchema, updateItemSchema } from "./index";
 
 describe("createItemSchema", () => {
   it("applies defaults for a bare title", () => {
@@ -13,5 +13,11 @@ describe("createItemSchema", () => {
 
   it("rejects an empty title", () => {
     expect(createItemSchema.safeParse({ title: "   " }).success).toBe(false);
+  });
+});
+
+describe("updateItemSchema", () => {
+  it("leaves omitted fields out instead of defaulting them", () => {
+    expect(updateItemSchema.parse({ status: "done" })).toEqual({ status: "done" });
   });
 });

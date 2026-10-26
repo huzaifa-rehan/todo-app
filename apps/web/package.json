@@ -7,12 +7,13 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@ability/api": "workspace:*",
     "@ability/db": "workspace:*",
     "@ability/shared": "workspace:*",
+    "@tanstack/react-query": "^5.104.5",
     "better-auth": "^1.7.13",
     "hono": "^4.8.0",
     "next": "15.5.28",

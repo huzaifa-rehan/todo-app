@@ -14,8 +14,10 @@
   "dependencies": {
     "@ability/db": "workspace:*",
     "@ability/shared": "workspace:*",
+    "@hono/zod-validator": "^0.9.1",
     "better-auth": "^1.7.13",
-    "hono": "^4.8.0"
+    "hono": "^4.8.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "typescript": "^5.8.0",
