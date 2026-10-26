@@ -1,18 +1,8 @@
 import { eq, getDb, members, workspaces } from "@ability/db";
 import { Hono } from "hono";
-import { createMiddleware } from "hono/factory";
 import { getAuth } from "./auth";
-
-type Session = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>["api"]["getSession"]>>>;
-type AuthEnv = { Variables: { user: Session["user"]; session: Session["session"] } };
-
-const requireUser = createMiddleware<AuthEnv>(async (c, next) => {
-  const session = await getAuth().api.getSession({ headers: c.req.raw.headers });
-  if (!session) return c.json({ error: "Unauthorized" }, 401);
-  c.set("user", session.user);
-  c.set("session", session.session);
-  await next();
-});
+import { itemRoutes } from "./items";
+import { requireUser } from "./middleware";
 
 // Routes are chained so AppType carries every route for the typed client.
 const v1 = new Hono()
@@ -25,7 +15,8 @@ const v1 = new Hono()
       .innerJoin(workspaces, eq(members.workspaceId, workspaces.id))
       .where(eq(members.userId, user.id));
     return c.json({ user: { id: user.id, name: user.name, email: user.email }, workspaces: userWorkspaces });
-  });
+  })
+  .route("/", itemRoutes);
 
 export const app = new Hono()
   .basePath("/api")

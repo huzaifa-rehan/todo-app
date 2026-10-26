@@ -29,7 +29,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-xl border border-neutral-200 p-6 dark:border-neutral-800">
+      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-semibold">{isSignUp ? "Create your account" : "Sign in"}</h1>
         {isSignUp && <Field name="name" label="Name" autoComplete="name" />}
         <Field name="email" label="Email" type="email" autoComplete="email" />
@@ -64,7 +64,7 @@ function Field({ label, ...props }: { label: string } & React.InputHTMLAttribute
       <span>{label}</span>
       <input
         required
-        className="w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 dark:border-neutral-700"
+        className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2"
         {...props}
       />
     </label>
