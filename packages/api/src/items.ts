@@ -1,4 +1,4 @@
-import { and, asc, eq, getDb, isNull, items, sql } from "@ability/db";
+import { and, asc, boardNodes, edges, eq, getDb, isNull, items, or, sql } from "@ability/db";
 import { createItemSchema, listItemsQuerySchema, updateItemSchema } from "@ability/shared";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
@@ -21,7 +21,7 @@ const childCounts = {
   doneCount: sql<number>`(select count(*)::int from ${items} c where c.parent_id = "items"."id" and c.status = 'done')`,
 };
 
-const itemColumns = {
+export const itemColumns = {
   id: items.id,
   parentId: items.parentId,
   type: items.type,
@@ -36,7 +36,7 @@ const itemColumns = {
   ...childCounts,
 };
 
-async function findItem(workspaceId: string, id: string) {
+export async function findItem(workspaceId: string, id: string) {
   const [item] = await getDb()
     .select(itemColumns)
     .from(items)
@@ -45,7 +45,7 @@ async function findItem(workspaceId: string, id: string) {
 }
 
 // Root first, ending with the item itself.
-async function ancestors(workspaceId: string, id: string) {
+export async function ancestors(workspaceId: string, id: string) {
   const { rows } = await getDb().execute<{ id: string; title: string; type: string }>(sql`
     with recursive chain as (
       select id, parent_id, title, type, 0 as depth from ${items}
@@ -82,7 +82,7 @@ export const itemRoutes = new Hono<WorkspaceEnv>()
   })
   .post("/workspaces/:workspaceId/items", zValidator("json", createItemSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
-    const input = c.req.valid("json");
+    const { position, ...input } = c.req.valid("json");
     if (input.parentId && !(await findItem(workspaceId, input.parentId))) {
       return c.json({ error: "Parent not found" }, 400);
     }
@@ -96,23 +96,33 @@ export const itemRoutes = new Hono<WorkspaceEnv>()
       .insert(items)
       .values({ ...input, workspaceId, sortOrder: next, createdBy: c.get("user").id })
       .returning({ id: items.id });
+    if (position) {
+      await db.insert(boardNodes).values({ itemId: created!.id, workspaceId, boardOwnerId: input.parentId, ...position });
+    }
     return c.json({ item: (await findItem(workspaceId, created!.id))! }, 201);
   })
   .patch("/workspaces/:workspaceId/items/:itemId", itemParam, zValidator("json", updateItemSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
     const id = c.req.valid("param").itemId;
     const input = c.req.valid("json");
-    if (!(await findItem(workspaceId, id))) return c.json({ error: "Not found" }, 404);
+    const existing = await findItem(workspaceId, id);
+    if (!existing) return c.json({ error: "Not found" }, 404);
     if (input.parentId) {
       // An item can't move inside itself or any of its descendants.
       const chain = await ancestors(workspaceId, input.parentId);
       if (chain.length === 0) return c.json({ error: "Parent not found" }, 400);
       if (chain.some((a) => a.id === id)) return c.json({ error: "Cannot move an item inside itself" }, 400);
     }
-    await getDb()
+    const db = getDb();
+    await db
       .update(items)
       .set({ ...input, updatedAt: new Date() })
       .where(and(eq(items.workspaceId, workspaceId), eq(items.id, id)));
+    if (input.parentId !== undefined && input.parentId !== existing.parentId) {
+      // Moved to another board: its old position and connections no longer apply.
+      await db.delete(boardNodes).where(eq(boardNodes.itemId, id));
+      await db.delete(edges).where(or(eq(edges.sourceItemId, id), eq(edges.targetItemId, id)));
+    }
     return c.json({ item: (await findItem(workspaceId, id))! });
   })
   .delete("/workspaces/:workspaceId/items/:itemId", itemParam, async (c) => {

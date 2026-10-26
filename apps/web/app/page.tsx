@@ -10,5 +10,5 @@ export default async function Home() {
 
   const [first] = await getUserWorkspaces(session.user.id);
   if (!first) return <main className="p-6">You don&apos;t have a workspace yet.</main>;
-  redirect(`/w/${first.id}/list`);
+  redirect(`/w/${first.id}/board`);
 }

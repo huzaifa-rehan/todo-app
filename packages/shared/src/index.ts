@@ -13,6 +13,8 @@ export const createItemSchema = z.object({
   status: z.enum(itemStatuses).default("todo"),
   priority: z.enum(itemPriorities).default("medium"),
   dueAt: z.coerce.date().nullable().optional(),
+  // Where to place the new item on its parent's board.
+  position: z.object({ x: z.number().finite(), y: z.number().finite() }).optional(),
 });
 export type CreateItemInput = z.infer<typeof createItemSchema>;
 
@@ -37,7 +39,23 @@ export const listItemsQuerySchema = z.object({
 
 export const boardNodePositionSchema = z.object({
   itemId: z.string().uuid(),
-  x: z.number(),
-  y: z.number(),
+  x: z.number().finite(),
+  y: z.number().finite(),
 });
 export type BoardNodePosition = z.infer<typeof boardNodePositionSchema>;
+
+// Without ownerId, the root board of the workspace.
+export const boardQuerySchema = z.object({
+  ownerId: z.string().uuid().optional(),
+});
+
+export const savePositionsSchema = z.object({
+  positions: z.array(boardNodePositionSchema).min(1).max(500),
+});
+
+export const createEdgeSchema = z.object({
+  sourceItemId: z.string().uuid(),
+  targetItemId: z.string().uuid(),
+  kind: z.enum(edgeKinds).default("flow"),
+  label: z.string().trim().max(200).optional(),
+});

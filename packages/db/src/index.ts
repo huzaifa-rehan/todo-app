@@ -18,4 +18,4 @@ export function getDb() {
 
 export * from "./schema";
 // Re-exported so every package uses this package's single drizzle-orm copy.
-export { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+export { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
