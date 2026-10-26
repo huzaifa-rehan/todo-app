@@ -8,4 +8,14 @@ export function createDb(url = process.env.DATABASE_URL) {
 }
 
 export type Db = ReturnType<typeof createDb>;
+
+let db: Db | undefined;
+
+// Created on first use so importing this package never needs DATABASE_URL (builds, tests).
+export function getDb() {
+  return (db ??= createDb());
+}
+
 export * from "./schema";
+// Re-exported so every package uses this package's single drizzle-orm copy.
+export { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";

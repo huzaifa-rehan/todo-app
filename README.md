@@ -11,7 +11,7 @@ Order of use: solo → office team → SaaS.
 | Web app | Next.js (App Router), Tailwind, React Flow — deployed on Vercel |
 | API | Hono at `/api/v1`, mounted inside Next.js, with a typed client shared with the extension |
 | Database | Postgres (Neon) + Drizzle ORM |
-| Auth | Better Auth (planned) |
+| Auth | Better Auth (email + password; Google when configured) |
 | Extension | WXT, Manifest V3 (planned) |
 | Monorepo | pnpm workspaces + Turborepo |
 
@@ -34,7 +34,7 @@ packages/shared   zod schemas and shared types
 ```bash
 corepack enable          # or: npm i -g pnpm
 pnpm install
-cp .env.example .env     # set DATABASE_URL
+cp .env.example .env     # set DATABASE_URL and BETTER_AUTH_SECRET
 pnpm dev                 # http://localhost:3000
 pnpm lint && pnpm typecheck && pnpm test
 pnpm db:generate         # create a migration from the schema
@@ -44,7 +44,7 @@ pnpm db:migrate          # apply migrations
 ## Roadmap — MVP 0.1
 
 1. ✅ Monorepo scaffold and CI
-2. Auth and an automatic personal workspace
+2. ✅ Auth and an automatic personal workspace
 3. Items CRUD API and list view
 4. Nested boards (React Flow): create, move, connect, open, breadcrumbs
 5. Browser extension: popup quick-add, context menu, shortcut

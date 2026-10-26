@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts", "./schema": "./src/schema.ts" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
   "scripts": {
     "typecheck": "tsc",
     "generate": "drizzle-kit generate",
@@ -12,7 +15,11 @@
   "dependencies": {
     "@ability/shared": "workspace:*",
     "@neondatabase/serverless": "^1.0.0",
-    "drizzle-orm": "^0.44.0"
+    "drizzle-orm": "^0.45.4"
   },
-  "devDependencies": { "@types/node": "^20", "drizzle-kit": "^0.31.0", "typescript": "^5.8.0" }
+  "devDependencies": {
+    "@types/node": "^20",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^5.8.0"
+  }
 }
