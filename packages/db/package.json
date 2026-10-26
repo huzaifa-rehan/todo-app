@@ -1,0 +1,18 @@
+{
+  "name": "@ability/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./schema": "./src/schema.ts" },
+  "scripts": {
+    "typecheck": "tsc",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@ability/shared": "workspace:*",
+    "@neondatabase/serverless": "^1.0.0",
+    "drizzle-orm": "^0.44.0"
+  },
+  "devDependencies": { "@types/node": "^20", "drizzle-kit": "^0.31.0", "typescript": "^5.8.0" }
+}
