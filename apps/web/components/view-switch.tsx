@@ -16,14 +16,16 @@ export function ViewSwitch({
       href={`/w/${workspaceId}/${view}${suffix}`}
       aria-current={current === view ? "page" : undefined}
       className={`rounded-md px-3 py-1 text-sm ${
-        current === view ? "bg-white font-medium text-neutral-900 shadow-sm" : "text-neutral-500 hover:text-neutral-900"
+        current === view
+          ? "bg-white font-medium text-neutral-900 shadow-sm desk:bg-white/15 desk:text-white desk:shadow-none"
+          : "text-neutral-500 hover:text-neutral-900 desk:text-neutral-300 desk:hover:text-white"
       }`}
     >
       {label}
     </Link>
   );
   return (
-    <div className="inline-flex rounded-lg bg-neutral-100 p-0.5">
+    <div className="inline-flex rounded-lg bg-neutral-100 p-0.5 desk:border desk:border-white/10 desk:bg-neutral-950/60 desk:shadow-lg desk:backdrop-blur-md">
       {tab("board", "Board")}
       {tab("list", "List")}
     </div>

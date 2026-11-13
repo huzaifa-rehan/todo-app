@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { isDesktopMode } from "@/lib/desktop";
 import { getSession } from "@/lib/session";
 import { getWorkspaceForUser } from "@/lib/workspace";
 import { SignOutButton } from "../../sign-out-button";
@@ -18,6 +19,7 @@ export default async function WorkspaceLayout({
   const { workspaceId } = await params;
   const workspace = await getWorkspaceForUser(workspaceId, session.user.id);
   if (!workspace) notFound();
+  if (isDesktopMode) return <div className="min-h-screen">{children}</div>;
 
   return (
     <div className="min-h-screen">

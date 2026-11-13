@@ -41,6 +41,21 @@ pnpm db:generate         # create a migration from the schema
 pnpm db:migrate          # apply migrations
 ```
 
+## Desktop board (Windows)
+
+Runs the whiteboard as your desktop: your real icons sit on top and open as usual, and anywhere else is the board, over a tinted copy of your wallpaper. It uses a local production build on `127.0.0.1:3100` and an Edge app window, and needs the same database connection as the app.
+
+```powershell
+.\desktop\ability-desktop.ps1 start       # or: stop, status
+.\desktop\ability-desktop.ps1 install     # also start at login (uninstall to undo)
+.\desktop\ability-desktop.ps1 build       # rebuild after changing the app
+```
+
+- The `?` button on the board lists the mouse actions and hotkeys.
+- `Ctrl+Alt+B` brings the board over your windows, and again sends it back.
+- `Ctrl+Alt+Shift+B` hides the board, for example to drag or rearrange icons.
+- `stop` restores your original wallpaper. Moving the taskbar or picking a new wallpaper rebuilds the background automatically.
+
 ## Roadmap — MVP 0.1
 
 1. ✅ Monorepo scaffold and CI
