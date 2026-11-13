@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+const CRUMB = "hover:text-neutral-900 desk:hover:text-white";
+const CURRENT_CRUMB = "font-medium text-neutral-900 desk:text-white";
+
 export function Breadcrumbs({
   base,
   crumbs,
@@ -10,8 +13,8 @@ export function Breadcrumbs({
   currentId?: string;
 }) {
   return (
-    <nav className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
-      <Link href={base} className={currentId ? "hover:text-neutral-900" : "font-medium text-neutral-900"}>
+    <nav className="flex flex-wrap items-center gap-1 text-sm text-neutral-500 desk:text-neutral-300">
+      <Link href={base} className={currentId ? CRUMB : CURRENT_CRUMB}>
         All items
       </Link>
       {crumbs.map((crumb) => (
@@ -19,7 +22,7 @@ export function Breadcrumbs({
           <span>/</span>
           <Link
             href={`${base}/${crumb.id}`}
-            className={crumb.id === currentId ? "font-medium text-neutral-900" : "hover:text-neutral-900"}
+            className={crumb.id === currentId ? CURRENT_CRUMB : CRUMB}
           >
             {crumb.title}
           </Link>

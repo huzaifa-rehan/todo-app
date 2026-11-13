@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ViewSwitch } from "@/components/view-switch";
 import { api, invalidateWorkspace, type Item, unwrap } from "@/lib/api";
+import { isDesktopMode } from "@/lib/desktop";
 
 type ItemType = (typeof itemTypes)[number];
 
@@ -76,7 +77,7 @@ export function ItemList({ workspaceId, itemId }: { workspaceId: string; itemId?
   const done = items.filter((i) => i.status === "done").length;
 
   return (
-    <main className="mx-auto max-w-3xl space-y-5 px-4 py-6">
+    <main className={`mx-auto max-w-3xl space-y-5 px-4 py-6 ${isDesktopMode ? "mt-6 rounded-xl bg-white shadow-lg" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Breadcrumbs base={base} crumbs={parent.data?.breadcrumbs ?? []} currentId={itemId} />
         <ViewSwitch workspaceId={workspaceId} itemId={itemId} current="list" />

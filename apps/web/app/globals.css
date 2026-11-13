@@ -7,6 +7,9 @@
   --foreground: #171717;
 }
 
+/* Board styles for the desktop build only, e.g. desk:bg-black. */
+@custom-variant desk (&:where(body.desktop-mode .react-flow *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -17,4 +20,23 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Desktop build: the same pixels as the Windows wallpaper, so icons show through seamlessly. */
+body.desktop-mode {
+  background: #111 url("/desktop-wallpaper.png") 0 0 / 100vw auto no-repeat fixed;
+}
+
+body.desktop-mode .react-flow {
+  --xy-background-color: transparent;
+  --xy-minimap-background-color: rgb(10 10 14 / 0.6);
+  --xy-minimap-mask-background-color: rgb(255 255 255 / 0.06);
+  --xy-controls-button-background-color: rgb(10 10 14 / 0.6);
+  --xy-controls-button-background-color-hover: rgb(60 60 66 / 0.8);
+  --xy-controls-button-border-color: rgb(255 255 255 / 0.1);
+  --xy-attribution-background-color: transparent;
+}
+
+body.desktop-mode .react-flow__attribution {
+  opacity: 0.35;
 }

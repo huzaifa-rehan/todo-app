@@ -9,6 +9,7 @@ import {
   type Connection,
   Controls,
   type Edge,
+  type FitViewOptions,
   MarkerType,
   MiniMap,
   type OnConnectEnd,
@@ -24,6 +25,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ViewSwitch } from "@/components/view-switch";
 import { api, type Board as BoardData, type BoardItem, invalidateWorkspace, unwrap } from "@/lib/api";
+import { isDesktopMode } from "@/lib/desktop";
 import { type ItemNode, ItemNodeCard, type ItemNodeData } from "./item-node";
 
 type ItemType = (typeof itemTypes)[number];
@@ -32,6 +34,15 @@ type Point = { x: number; y: number };
 const nodeTypes = { item: ItemNodeCard };
 const CARD = { w: 240, h: 90 };
 const GRID = { cols: 4, w: 290, h: 150 };
+// Desktop icons show through the board, so its controls keep clear of the usual icon columns.
+const ICON_CLEARANCE = isDesktopMode ? { left: 240, right: 110 } : null;
+const FLOW_EDGE = isDesktopMode ? "#e5e5e5" : "#737373";
+const GLASS = "desk:border-white/10 desk:bg-neutral-950/60 desk:text-neutral-100 desk:shadow-lg desk:backdrop-blur-md";
+// A board this small fits on screen, so on the desktop the minimap would only be clutter.
+const MINIMAP_MIN_CARDS = isDesktopMode ? 6 : 0;
+const FIT: FitViewOptions<ItemNode> = isDesktopMode
+  ? { padding: { top: "100px", right: "140px", bottom: "70px", left: "270px" }, maxZoom: 1.1, duration: 300 }
+  : { padding: 0.25, maxZoom: 1.1, duration: 300 };
 
 // Items that were never placed get a grid slot below the placed ones.
 function layout(items: BoardItem[]) {
@@ -65,8 +76,8 @@ function toEdge(e: BoardData["edges"][number]): Edge {
     target: e.targetItemId,
     type: "smoothstep",
     label: e.label ?? undefined,
-    markerEnd: { type: MarkerType.ArrowClosed, color: blocks ? "#dc2626" : "#737373" },
-    style: blocks ? { stroke: "#dc2626", strokeDasharray: "6 4" } : { stroke: "#737373", strokeWidth: 1.5 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: blocks ? "#dc2626" : FLOW_EDGE },
+    style: blocks ? { stroke: "#dc2626", strokeDasharray: "6 4" } : { stroke: FLOW_EDGE, strokeWidth: 1.5 },
   };
 }
 
@@ -264,7 +275,7 @@ function BoardCanvas({ workspaceId, itemId }: { workspaceId: string; itemId?: st
   useEffect(() => {
     if (framed.current || nodes.length === 0 || !nodes.every((n) => n.measured)) return;
     framed.current = true;
-    void rf.fitView({ padding: 0.25, maxZoom: 1.1, duration: 300 });
+    void rf.fitView(FIT);
   }, [nodes, rf]);
 
   // Esc goes up a level (unless typing).
@@ -299,7 +310,7 @@ function BoardCanvas({ workspaceId, itemId }: { workspaceId: string; itemId?: st
   return (
     <div
       ref={wrapper}
-      className="h-[calc(100dvh-3.5rem)] w-full"
+      className={`${isDesktopMode ? "h-dvh" : "h-[calc(100dvh-3.5rem)]"} w-full`}
       onDoubleClick={(e) => {
         if ((e.target as HTMLElement).classList.contains("react-flow__pane")) {
           addItem("task", rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }));
@@ -329,39 +340,48 @@ function BoardCanvas({ workspaceId, itemId }: { workspaceId: string; itemId?: st
         zoomOnDoubleClick={false}
         minZoom={0.1}
         maxZoom={3}
-        colorMode="light"
+        colorMode={isDesktopMode ? "dark" : "light"}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color="#d4d4d4" />
-        <Controls showInteractive={false} />
-        <MiniMap<ItemNode>
-          pannable
-          zoomable
-          nodeColor={(n) => (n.data.item.type === "project" ? "#a5b4fc" : "#d4d4d4")}
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color={isDesktopMode ? "rgba(255,255,255,0.1)" : "#d4d4d4"} />
+        <Controls
+          showInteractive={false}
+          fitViewOptions={isDesktopMode ? FIT : undefined}
+          style={ICON_CLEARANCE ? { marginLeft: ICON_CLEARANCE.left } : undefined}
+          className="desk:overflow-hidden desk:rounded-lg desk:opacity-70 desk:transition-opacity desk:hover:opacity-100"
         />
+        {nodes.length >= MINIMAP_MIN_CARDS && (
+          <MiniMap<ItemNode>
+            pannable
+            zoomable
+            nodeColor={(n) => (n.data.item.type === "project" ? "#a5b4fc" : isDesktopMode ? "#a3a3a3" : "#d4d4d4")}
+            className="desk:overflow-hidden desk:rounded-lg desk:opacity-70 desk:transition-opacity desk:hover:opacity-100"
+          />
+        )}
 
-        <Panel position="top-left" className="max-w-[60vw] rounded-xl border border-neutral-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur">
+        <Panel position="top-left" style={ICON_CLEARANCE ? { marginLeft: ICON_CLEARANCE.left } : undefined} className={`max-w-[60vw] rounded-xl border border-neutral-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur ${GLASS}`}>
           <Breadcrumbs
             base={`/w/${workspaceId}/board`}
             crumbs={board.data?.breadcrumbs ?? []}
             currentId={itemId}
           />
-          <h1 className="truncate text-lg font-semibold">{itemId ? (owner?.title ?? "…") : "All items"}</h1>
+          <h1 className="truncate text-lg font-semibold desk:sr-only">{itemId ? (owner?.title ?? "…") : "All items"}</h1>
         </Panel>
 
-        <Panel position="top-right" className="flex flex-wrap items-center justify-end gap-2">
-          <div className="flex overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
+        <Panel position="top-right" style={ICON_CLEARANCE ? { marginRight: ICON_CLEARANCE.right } : undefined} className="flex flex-wrap items-center justify-end gap-2">
+          <div className={`flex overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm ${GLASS}`}>
             {(["task", "project", "note"] as const).map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => addAtViewCenter(type)}
-                className="border-r border-neutral-200 px-3 py-1.5 text-sm last:border-r-0 hover:bg-neutral-50"
+                className="border-r border-neutral-200 px-3 py-1.5 text-sm last:border-r-0 hover:bg-neutral-50 desk:border-white/10 desk:hover:bg-white/10"
               >
                 + {type[0]!.toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>
           <ViewSwitch workspaceId={workspaceId} itemId={itemId} current="board" />
+          {isDesktopMode && <DesktopHelp />}
         </Panel>
 
         {error && (
@@ -371,17 +391,51 @@ function BoardCanvas({ workspaceId, itemId }: { workspaceId: string; itemId?: st
         )}
 
         {board.data && board.data.items.length === 0 && (
-          <Panel position="top-center" className="pointer-events-none mt-[30vh] text-center text-sm text-neutral-500">
-            <p className="text-base font-medium text-neutral-700">This board is empty</p>
+          <Panel position="top-center" className={`pointer-events-none mt-[30vh] text-center text-sm ${isDesktopMode ? "text-neutral-200" : "text-neutral-500"}`}>
+            <p className={`text-base font-medium ${isDesktopMode ? "text-white" : "text-neutral-700"}`}>This board is empty</p>
             <p>Double-click anywhere to add a task, or use the buttons at the top right.</p>
           </Panel>
         )}
 
-        <Panel position="bottom-center" className="hidden rounded-lg bg-white/80 px-3 py-1.5 text-xs text-neutral-500 shadow-sm md:block">
-          Double-click empty space to add · drag from a card&apos;s dot to connect · double-click a card to open it
-          {itemId ? " · Esc to go up" : ""}
-        </Panel>
+        {!isDesktopMode && (
+          <Panel position="bottom-center" className="hidden rounded-lg bg-white/80 px-3 py-1.5 text-xs text-neutral-500 shadow-sm md:block">
+            Double-click empty space to add · drag from a card&apos;s dot to connect · double-click a card to open it
+            {itemId ? " · Esc to go up" : ""}
+          </Panel>
+        )}
       </ReactFlow>
     </div>
+  );
+}
+
+const DESKTOP_TIPS = [
+  ["Double-click empty space", "Add a task"],
+  ["Drag from a card's dot", "Connect cards"],
+  ["Double-click a card", "Open it"],
+  ["Esc", "Go up a level"],
+  ["Ctrl+Alt+B", "Bring the board over your windows, or send it back"],
+  ["Ctrl+Alt+Shift+B", "Hide the board, for example to move icons"],
+] as const;
+
+// On the desktop the tips stay out of the way until asked for.
+function DesktopHelp() {
+  return (
+    <details className="relative">
+      <summary
+        aria-label="Board help"
+        title="Board help"
+        className={`flex size-8 cursor-pointer list-none items-center justify-center rounded-lg border text-sm [&::-webkit-details-marker]:hidden ${GLASS}`}
+      >
+        ?
+      </summary>
+      <dl className={`absolute top-full right-0 mt-2 w-96 space-y-2 rounded-xl border p-3 text-xs ${GLASS}`}>
+        {DESKTOP_TIPS.map(([action, result]) => (
+          <div key={action} className="flex justify-between gap-4">
+            <dt className="shrink-0 font-medium">{action}</dt>
+            <dd className="text-right text-neutral-300">{result}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
   );
 }
